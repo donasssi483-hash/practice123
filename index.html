@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1c2330">
+<title>FreeTalk — 자유 영어 대화</title>
+<style>
+  :root {
+    --ink: #1c2330;
+    --ink-soft: #3a4456;
+    --paper: #f3ecdf;
+    --paper-2: #e7ddcd;
+    --card: #fffdf8;
+    --line: #e0d4c3;
+    --muted: #6d6458;
+    --accent: #9d3b1c;
+    --accent-2: #c4512c;
+    --sage: #234237;
+    --sage-bg: #e7f0ea;
+    --user: #243044;
+    --user-text: #f7f1e6;
+    --sidebar: #1c2330;
+    --sidebar-text: #f3ecdf;
+    --sidebar-muted: #b7c0cc;
+    --shadow: 0 10px 30px rgba(36, 32, 24, 0.08);
+    --sans: "Malgun Gothic", "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--sans);
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 500px at 10% -10%, #f7f1e4 0%, transparent 50%),
+      var(--paper);
+  }
+
+  button, textarea { font-family: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .app {
+    height: 100vh;
+    height: 100dvh;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: 0;
+  }
+
+  aside {
+    background: var(--sidebar);
+    color: var(--sidebar-text);
+    padding: 28px 22px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: var(--accent-2);
+    color: white;
+    display: grid;
+    place-items: center;
+    font-family: Palatino, "Palatino Linotype", Georgia, serif;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    font-size: 18px;
+  }
+  .brand h1 {
+    margin: 0;
+    font-family: Palatino, "Palatino Linotype", Georgia, serif;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .brand p {
+    margin: 2px 0 0;
+    color: var(--sidebar-muted);
+    font-size: 13px;
+  }
+
+  .group { display: flex; flex-direction: column; gap: 8px; }
+  .group h2 {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sidebar-muted);
+    font-weight: 700;
+  }
+
+  .seg {
+    display: grid;
+    gap: 6px;
+  }
+  .seg.three { grid-template-columns: repeat(3, 1fr); }
+  .seg button, .topic {
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--sidebar-text);
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 13px;
+    text-align: left;
+  }
+  .seg button { text-align: center; }
+  .seg button[aria-pressed="true"], .topic[aria-pressed="true"] {
+    background: #fff8ee;
+    color: var(--ink);
+    border-color: #fff8ee;
+  }
+  .seg button small, .topic small {
+    display: block;
+    color: var(--sidebar-muted);
+    font-size: 11px;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .seg button[aria-pressed="true"] small, .topic[aria-pressed="true"] small {
+    color: var(--muted);
+  }
+
+  .topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .topic { width: auto; border-radius: 999px; padding: 7px 12px; }
+
+  .toggles { display: flex; flex-direction: column; gap: 8px; }
+  .toggles label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--sidebar-text);
+  }
+  .toggles input { accent-color: var(--accent-2); width: 16px; height: 16px; }
+
+  .ghost {
+    margin-top: auto;
+    background: transparent;
+    color: var(--sidebar-muted);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .ghost:hover { color: white; border-color: rgba(255, 255, 255, 0.4); }
+
+  .note {
+    margin: 0;
+    color: var(--sidebar-muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  main {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+  }
+
+  header.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 28px 12px;
+  }
+  header.top h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+  header.top p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .count {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  #log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 28px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .msg {
+    display: flex;
+    gap: 10px;
+    max-width: 760px;
+    animation: rise 0.28s ease;
+  }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+  .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    flex: none;
+    background: #efe2d2;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .msg.user .avatar { background: var(--user); color: var(--user-text); }
+
+  .bubble {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 16px;
+    line-height: 1.55;
+    font-size: 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg.bot .bubble {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top-left-radius: 6px;
+    box-shadow: var(--shadow);
+  }
+  .msg.user .bubble {
+    background: var(--user);
+    color: var(--user-text);
+    border-top-right-radius: 6px;
+  }
+  .stack { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .replay {
+    align-self: flex-start;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 0 2px;
+  }
+  .replay:hover { color: var(--accent); }
+
+  .tip {
+    background: var(--sage-bg);
+    color: var(--sage);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 520px;
+  }
+  .tip strong { display: block; margin-bottom: 4px; font-size: 12px; letter-spacing: 0.02em; }
+  .tip .natural { font-size: 15px; color: #163028; }
+  .tip ul { margin: 6px 0 0; padding-left: 18px; }
+
+  .sys {
+    align-self: center;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+
+  .dock {
+    padding: 0 28px 18px;
+  }
+  .suggests {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 36px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .suggests .label {
+    font-size: 12px;
+    color: var(--muted);
+    width: 100%;
+  }
+  .suggests button {
+    border: 1px dashed #c8b8a2;
+    background: rgba(255, 253, 248, 0.8);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 13px;
+    text-align: left;
+  }
+  .suggests button:hover { border-style: solid; border-color: var(--accent-2); }
+
+  form.composer {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 8px;
+    box-shadow: var(--shadow);
+  }
+  textarea {
+    border: 0;
+    resize: none;
+    padding: 10px 8px;
+    font-size: 16px;
+    line-height: 1.45;
+    background: transparent;
+    color: var(--ink);
+    max-height: 140px;
+  }
+  .iconbtn, .send {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    border: 0;
+    display: grid;
+    place-items: center;
+    align-self: end;
+  }
+  .iconbtn {
+    background: transparent;
+    color: var(--ink-soft);
+  }
+  .iconbtn[aria-pressed="true"] {
+    background: #fde8e2;
+    color: var(--accent);
+    animation: pulse 1.2s ease infinite;
+  }
+  .iconbtn:disabled { opacity: 0.35; cursor: not-allowed; animation: none; }
+  .send {
+    background: var(--accent);
+    color: white;
+  }
+  .send:hover { background: #872f14; }
+  .hint {
+    margin: 8px 4px 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pulse {
+    50% { box-shadow: 0 0 0 6px rgba(196, 81, 44, 0.15); }
+  }
+
+  @media (max-width: 860px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+    aside { padding: 10px 12px 8px; gap: 8px; height: auto; max-height: 46vh; }
+    .group { gap: 4px; }
+    .note { display: none; }
+    .ghost { margin-top: 0; padding: 7px 10px; }
+    .seg { grid-template-columns: repeat(3, 1fr); }
+    .seg button { padding: 7px 6px; }
+    .seg button small { display: none; }
+    .toggles { flex-direction: row; flex-wrap: wrap; gap: 8px 14px; }
+    .mark { width: 32px; height: 32px; border-radius: 10px; }
+    header.top, #log, .dock { padding-left: 14px; padding-right: 14px; }
+    .brand h1 { font-size: 20px; }
+    .brand p { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="mark">Ft</div>
+        <div>
+          <h1>FreeTalk</h1>
+          <p>자유 영어 대화</p>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>대화 상대</h2>
+        <div class="seg" id="modes">
+          <button type="button" data-mode="friend" aria-pressed="true">친구<small>편하게 수다</small></button>
+          <button type="button" data-mode="tutor" aria-pressed="false">선생님<small>문장을 다듬어 줘요</small></button>
+          <button type="button" data-mode="interview" aria-pressed="false">면접관<small>영어 면접 연습</small></button>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>난이도</h2>
+        <div class="seg three" id="levels">
+          <button type="button" data-level="beginner" aria-pressed="true">초급</button>
+          <button type="button" data-level="intermediate" aria-pressed="false">중급</button>
+          <button type="button" data-level="advanced" aria-pressed="false">고급</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>이야기 주제</h2>
+        <div class="topics" id="topics">
+          <button type="button" class="topic" data-topic="day">일상</button>
+          <button type="button" class="topic" data-topic="hobby">취미</button>
+          <button type="button" class="topic" data-topic="food">음식</button>
+          <button type="button" class="topic" data-topic="travel">여행</button>
+          <button type="button" class="topic" data-topic="media">영화·음악</button>
+          <button type="button" class="topic" data-topic="work">일·공부</button>
+          <button type="button" class="topic" data-topic="weekend">주말</button>
+          <button type="button" class="topic" data-topic="dream">꿈</button>
+        </div>
+      </div>
+
+      <div class="toggles">
+        <label><input type="checkbox" id="voice" checked> 목소리로 듣기</label>
+        <label><input type="checkbox" id="slow"> 천천히 말하기</label>
+      </div>
+
+      <p class="note">대화는 .env의 키로 OpenAI에 연결됩니다. start.bat을 실행한 주소로 여세요. 음성 인식은 Chrome에서 가장 잘 됩니다.</p>
+      <button type="button" class="ghost" id="clear">대화 지우기</button>
+    </aside>
+
+    <main>
+      <header class="top">
+        <div>
+          <h2 id="who">Mia · 친구</h2>
+          <p id="whoHelp">시험이 아니에요. 생각나는 대로 영어로 말해 보세요.</p>
+        </div>
+        <div class="count" id="count">오늘 0문장</div>
+      </header>
+      <div id="log" aria-live="polite"></div>
+      <div class="dock">
+        <div class="suggests" id="suggests"></div>
+        <form class="composer" id="form">
+          <textarea id="box" lang="en" spellcheck="true" rows="2" placeholder="영어로 편하게 말해 보세요" autocomplete="off"></textarea>
+          <button type="button" class="iconbtn" id="mic" aria-label="음성으로 입력" title="음성으로 입력">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M6 11a6 6 0 0 0 12 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M12 17v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button type="submit" class="send" aria-label="보내기" title="보내기">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </form>
+        <p class="hint">Enter로 보내기 · Shift+Enter로 줄바꿈 · 추천 문장은 고친 다음 보내도 좋아요</p>
+      </div>
+    </main>
+  </div>
+
+<script>
+(function () {
+  const MODES = {
+    friend: { title: "Mia · 친구", help: "시험이 아니에요. 생각나는 대로 영어로 말해 보세요." },
+    tutor: { title: "Mia · 선생님", help: "대화하면서, 더 자연스러운 문장을 카드로 보여 드려요." },
+    interview: { title: "Mia · 면접관", help: "카페 회사 면접이라고 생각하고 답해 보세요." }
+  };
+
+  const TOPICS = {
+    day: "your day",
+    hobby: "hobbies",
+    food: "food",
+    travel: "travel",
+    media: "movies and music",
+    work: "work and study",
+    weekend: "the weekend",
+    dream: "dreams"
+  };
+
+  const OPENERS = {
+    friend: {
+      beginner: "Hi, I'm Mia. Let's just talk. There is no test. What did you do today?",
+      intermediate: "Hey, I'm Mia. Let's have a real conversation. What's something on your mind today?",
+      advanced: "Hey, I'm Mia. Talk to me like a friend — opinions and half-finished thoughts are welcome. What's been on your mind lately?"
+    },
+    tutor: {
+      beginner: "Hello, I'm Mia. We will chat in English. If a sentence can sound more natural, I will show you a gentle rewrite. How was your day?",
+      intermediate: "Hello, I'm Mia. We'll talk freely, and I'll point out a more natural phrasing when it helps. What did you do today?",
+      advanced: "Hello, I'm Mia. Let's talk freely. I'll only step in when a phrase could sound more natural. What's worth telling me about your day?"
+    },
+    interview: {
+      beginner: "Hello, thank you for coming in. I'm Mia. Let's start with an easy question. Can you tell me about yourself?",
+      intermediate: "Hello, and thanks for coming in. I'm Mia, and I'll be your interviewer today. Could you tell me a little about yourself?",
+      advanced: "Thanks for making the time. I'm Mia. Let's treat this as a real interview. Walk me through who you are and what you're looking for."
+    }
+  };
+
+  const TOPIC_OPENERS = {
+    day: ["Let's talk about daily life.", "What does a normal day look like for you?"],
+    hobby: ["Let's talk about hobbies.", "What do you enjoy doing when you have free time?"],
+    food: ["Let's talk about food.", "What did you eat recently that you really liked?"],
+    travel: ["Let's talk about travel.", "Is there a place you want to visit, or one you still remember?"],
+    media: ["Let's talk about movies and music.", "What are you watching or listening to these days?"],
+    work: ["Let's talk about work or study.", "What are you working on or studying right now?"],
+    weekend: ["Let's talk about the weekend.", "How do you usually spend your weekend?"],
+    dream: ["Let's talk about dreams.", "What is something you hope to do in the future?"]
+  };
+
+  const INTERVIEW = [
+    {
+      q: "Can you tell me about yourself?",
+      samples: ["I am a student, and I like learning new things.", "I study design, and I enjoy working with people."]
+    },
+    {
+      q: "Why are you interested in this job?",
+      samples: ["I like this job because I enjoy helping people.", "I want this job because I can use my English every day."]
+    },
+    {
+      q: "What is one of your strengths?",
+      samples: ["I am patient, and I finish my work on time.", "I listen carefully, so people trust me."]
+    },
+    {
+      q: "Tell me about a difficult moment and what you did.",
+      samples: ["I had a hard test. I studied a little every day, and I passed.", "I made a mistake at work. I said sorry and fixed it."]
+    },
+    {
+      q: "How do you work with other people?",
+      samples: ["I ask questions and share my ideas clearly.", "I listen first, and then I help the team."]
+    },
+    {
+      q: "Where do you see yourself in five years?",
+      samples: ["In five years, I want to be more confident in English.", "I hope to have a job I enjoy and good friends at work."]
+    },
+    {
+      q: "Do you have any questions for me?",
+      samples: ["What does a normal day look like in this job?", "How does the team help new people?"]
+    }
+  ];
+
+  const QUESTIONS = {
+    day: [
+      ["What time do you usually wake up?", ["I usually wake up at 7.", "I wake up late on weekdays, around 8:30."]],
+      ["What is the best part of your day?", ["The best part is dinner with my family.", "I like the quiet time after work."]],
+      ["What is one thing you do almost every day?", ["I drink coffee every morning.", "I check my phone as soon as I wake up."]]
+    ],
+    hobby: [
+      ["How did you start that hobby?", ["A friend showed it to me.", "I started it when I was in school."]],
+      ["How often do you spend time on it?", ["I do it two or three times a week.", "Only on weekends, but I really enjoy it."]],
+      ["Would you recommend it to a friend?", ["Yes, because it is fun and not expensive.", "Maybe. It takes time, but it is worth it."]]
+    ],
+    food: [
+      ["Do you like cooking at home?", ["Yes, I cook simple meals.", "Not really. I like eating out more."]],
+      ["What food from your hometown should I try?", ["You should try kimchi stew. It is warm and spicy.", "Try Korean barbecue. It is great with friends."]],
+      ["Is there a food you could eat every day?", ["I could eat ramen every day.", "Rice and eggs. Simple, but I never get tired of them."]]
+    ],
+    travel: [
+      ["Do you prefer the city or nature when you travel?", ["I prefer the city because I like food and cafes.", "I prefer nature. I want quiet places."]],
+      ["Who would you want to travel with?", ["I want to travel with my best friend.", "I like traveling with my family."]],
+      ["What do you always pack?", ["I always pack a charger and comfortable shoes.", "I pack snacks, because I get hungry."]]
+    ],
+    media: [
+      ["Do you usually watch at home or go to the theater?", ["I usually watch at home.", "I like the theater when the movie is big."]],
+      ["What kind of music fits your mood today?", ["Soft music. I feel a little tired.", "Something fast. I need energy."]],
+      ["Have you ever cried or laughed hard at a movie?", ["Yes, I cried at a family movie.", "I laughed so hard at a comedy with my friends."]]
+    ],
+    work: [
+      ["What is the hardest part these days?", ["The hardest part is waking up early.", "There is a lot to remember, so I get tired."]],
+      ["Who helps you when things are difficult?", ["My friends help me.", "I ask my teacher or a coworker."]],
+      ["What do you want to be better at?", ["I want to be better at speaking English.", "I want to manage my time better."]]
+    ],
+    weekend: [
+      ["Are you a stay-home person or a go-out person?", ["I like staying home and resting.", "I like going out, even if it is just a walk."]],
+      ["What would a perfect Saturday look like?", ["A late breakfast, a walk, and a good dinner.", "Meeting friends and talking for a long time."]],
+      ["Did last weekend feel long enough?", ["No, it went by too fast.", "Yes, I rested a lot."]]
+    ],
+    dream: [
+      ["What is a small dream you could start this month?", ["I want to speak English for ten minutes a day.", "I want to cook one new dish."]],
+      ["Who supports your dream?", ["My family supports me.", "A close friend always encourages me."]],
+      ["What are you afraid might get in the way?", ["I am afraid I will give up when I am busy.", "I worry that I am not good enough yet."]]
+    ],
+    any: [
+      ["What is something that made you smile recently?", ["A funny message from a friend.", "Good food. It always works."]],
+      ["Are you more of a morning person or a night person?", ["I am a night person. Mornings are hard.", "I like mornings when I sleep enough."]],
+      ["What is a small thing you are good at?", ["I am good at listening.", "I make people feel comfortable."]],
+      ["If you had a free afternoon tomorrow, how would you use it?", ["I would take a walk and get coffee.", "I would stay home and watch a movie."]]
+    ]
+  };
+
+  const IRREG = {
+    go: "went", eat: "ate", see: "saw", meet: "met", have: "had", do: "did",
+    make: "made", come: "came", buy: "bought", take: "took", get: "got",
+    drink: "drank", sleep: "slept", write: "wrote", speak: "spoke",
+    leave: "left", feel: "felt", think: "thought", find: "found", give: "gave",
+    tell: "told", know: "knew", say: "said", become: "became"
+  };
+  const REG = ["play", "watch", "visit", "cook", "walk", "talk", "start", "finish", "work", "clean", "call", "stay", "listen", "enjoy", "want", "learn", "study", "open", "close", "help", "live", "arrive", "travel", "try", "ask", "like", "love", "hate"];
+
+  const STOP = new Set("i me my we us our you your he she it they them the a an to of in on at for with and or but so if is am are was were be been being do did does have has had this that these those just really very also still about into from by as not no yes ok okay yeah yep nope well like love enjoy want need think feel going gonna something someone anything today yesterday tomorrow because when while very really quite more most".split(" "));
+
+  const KO_HINTS = [
+    ["취미", "hobby", "My hobby is listening to music."],
+    ["좋아", "I like it", "I like it a lot."],
+    ["싫어", "I don't like it", "I don't like it very much."],
+    ["오늘", "today", "Today I went to school."],
+    ["어제", "yesterday", "Yesterday I stayed home."],
+    ["내일", "tomorrow", "Tomorrow I will meet a friend."],
+    ["음식", "food", "I want to talk about food."],
+    ["여행", "travel", "I want to talk about travel."],
+    ["영화", "movie", "I watched a movie."],
+    ["음악", "music", "I listen to music every day."],
+    ["일", "work", "I have a lot of work."],
+    ["공부", "study", "I study English."],
+    ["친구", "friend", "I met my friend."],
+    ["가족", "family", "I live with my family."],
+    ["피곤", "tired", "I am tired today."],
+    ["배고파", "hungry", "I am hungry."],
+    ["행복", "happy", "I feel happy."],
+    ["뭐해", "What are you doing?", "What are you doing?"],
+    ["이름", "name", "My name is Mina."]
+  ];
+
+  const state = {
+    mode: "friend",
+    level: "beginner",
+    topic: null,
+    turns: 0,
+    interviewStep: 0,
+    bags: {},
+    lastQuestion: "",
+    lastSamples: [],
+    praised: false,
+    facts: [],
+    history: [],
+    busy: false,
+    online: false
+  };
+
+  const log = document.getElementById("log");
+  const box = document.getElementById("box");
+  const suggests = document.getElementById("suggests");
+  const countEl = document.getElementById("count");
+  const who = document.getElementById("who");
+  const whoHelp = document.getElementById("whoHelp");
+  const voiceEl = document.getElementById("voice");
+  const slowEl = document.getElementById("slow");
+  const micBtn = document.getElementById("mic");
+
+  function loadSettings() {
+    try {
+      const saved = JSON.parse(localStorage.getItem("freetalk") || "{}");
+      if (saved.mode && MODES[saved.mode]) state.mode = saved.mode;
+      if (saved.level) state.level = saved.level;
+      if (typeof saved.voice === "boolean") voiceEl.checked = saved.voice;
+      if (typeof saved.slow === "boolean") slowEl.checked = saved.slow;
+    } catch (e) { /* keep defaults */ }
+    syncPressed("#modes button", "mode", state.mode);
+    syncPressed("#levels button", "level", state.level);
+    applyModeLabel();
+  }
+
+  function saveSettings() {
+    localStorage.setItem("freetalk", JSON.stringify({
+      mode: state.mode,
+      level: state.level,
+      voice: voiceEl.checked,
+      slow: slowEl.checked
+    }));
+  }
+
+  function syncPressed(selector, attr, value) {
+    document.querySelectorAll(selector).forEach((btn) => {
+      btn.setAttribute("aria-pressed", String(btn.dataset[attr] === value));
+    });
+  }
+
+  function applyModeLabel() {
+    who.textContent = MODES[state.mode].title;
+    whoHelp.textContent = MODES[state.mode].help;
+  }
+
+  function el(tag, cls, text) {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  function scrollLog() {
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function showLatestTurn() {
+    const users = log.querySelectorAll(".msg.user");
+    const last = users[users.length - 1];
+    if (last && last.querySelector(".tip")) last.scrollIntoView({ block: "start" });
+    else scrollLog();
+  }
+
+  function addSystem(text) {
+    const node = el("div", "sys", text);
+    log.appendChild(node);
+    scrollLog();
+    return node;
+  }
+
+  function addUser(text, tip) {
+    const row = el("div", "msg user");
+    row.appendChild(el("div", "avatar", "나"));
+    const stack = el("div", "stack");
+    const bubble = el("p", "bubble", text);
+    bubble.lang = "en";
+    stack.appendChild(bubble);
+    if (tip) stack.appendChild(tip);
+    row.appendChild(stack);
+    log.appendChild(row);
+    scrollLog();
+    return row;
+  }
+
+  function addBot(text, samples) {
+    const row = el("div", "msg bot");
+    row.appendChild(el("div", "avatar", "M"));
+    const stack = el("div", "stack");
+    const bubble = el("p", "bubble", text);
+    bubble.lang = "en";
+    stack.appendChild(bubble);
+    const replay = el("button", "replay", "다시 듣기");
+    replay.type = "button";
+    replay.addEventListener("click", () => speak(text));
+    stack.appendChild(replay);
+    row.appendChild(stack);
+    log.appendChild(row);
+    scrollLog();
+    showSuggestions(samples || []);
+    state.history.push({ role: "assistant", content: text });
+    if (state.history.length > 24) state.history = state.history.slice(-24);
+    speak(text);
+  }
+
+  function showSuggestions(samples) {
+    suggests.replaceChildren();
+    state.lastSamples = samples || [];
+    if (!samples || !samples.length) return;
+    suggests.appendChild(el("div", "label", "이렇게 말해볼까요? 누르면 입력창에 들어가요."));
+    samples.forEach((sample) => {
+      const btn = el("button", null, sample);
+      btn.type = "button";
+      btn.addEventListener("click", () => {
+        box.value = sample;
+        box.focus();
+        grow();
+      });
+      suggests.appendChild(btn);
+    });
+  }
+
+  function pickFresh(key, list) {
+    if (!list.length) return "";
+    if (!state.bags[key] || !state.bags[key].length) {
+      state.bags[key] = list.slice().sort(() => Math.random() - 0.5);
+    }
+    return state.bags[key].pop();
+  }
+
+  function tidy(sentence) {
+    let s = sentence.replace(/\s+/g, " ").trim();
+    s = s.replace(/\bi\b/g, "I");
+    s = s.replace(/\s+([,.!?])/g, "$1");
+    if (!s) return s;
+    s = s.charAt(0).toUpperCase() + s.slice(1);
+    if (!/[.!?]$/.test(s)) s += ".";
+    return s;
+  }
+
+  function core(sentence) {
+    return sentence.toLowerCase().replace(/[^a-z0-9\s']/g, "").replace(/\s+/g, " ").trim();
+  }
+
+  function pastOf(verb) {
+    if (IRREG[verb]) return IRREG[verb];
+    if (verb === "study") return "studied";
+    if (/e$/.test(verb)) return verb + "d";
+    if (/[bcdfghjklmnpqrstvwxyz]y$/.test(verb)) return verb.slice(0, -1) + "ied";
+    return verb + "ed";
+  }
+
+  function polish(raw) {
+    let text = raw.replace(/\s+/g, " ").trim();
+    const notes = [];
+
+    const rules = [
+      [/\bi am agree\b/ig, "I agree", "I am agree 대신 I agree를 써요."],
+      [/\bi very (like|love|want|enjoy)\b/ig, "I really $1", "very like 대신 really like라고 해요."],
+      [/\b(go|went|come|came|get|got|arrive|arrived) to home\b/ig, "$1 home", "home 앞에는 to를 붙이지 않아요. go home."],
+      [/\breturn back\b/ig, "return", "return에 back을 또 붙이지 않아요."],
+      [/\bmore better\b/ig, "better", "better에 more를 붙이지 않아요."],
+      [/\bmore easier\b/ig, "easier", "easier에 more를 붙이지 않아요."],
+      [/\bdiscuss about\b/ig, "discuss", "discuss 뒤에는 about을 쓰지 않아요."],
+      [/\bmarried with\b/ig, "married to", "married with 대신 married to를 써요."],
+      [/\bpeoples\b/ig, "people", "people은 이미 복수라 s를 붙이지 않아요."],
+      [/\binformations\b/ig, "information", "information은 셀 수 없는 명사예요."],
+      [/\badvices\b/ig, "advice", "advice는 보통 단수 형태로 써요."],
+      [/\balmost people\b/ig, "most people", "almost people 대신 most people이라고 해요."],
+      [/\bevery days\b/ig, "every day", "every day는 day를 복수로 쓰지 않아요."],
+      [/\blook forward to (see|meet|go|visit)\b/ig, "look forward to $1ing", "look forward to 뒤에는 -ing가 와요."],
+      [/\bexplain me\b/ig, "explain to me", "explain me 대신 explain to me."],
+      [/\bsay me\b/ig, "tell me", "말해주다는 tell me가 자연스러워요."],
+      [/\bdepend of\b/ig, "depend on", "depend of 대신 depend on."],
+      [/\bi have (\d{1,3}) years\b(?!\s+(?:old|of|experience|working|learning)\b)/ig, "I am $1 years old", "나이는 I am 20 years old처럼 말해요."],
+      [/\bi want (go|eat|play|see|visit|learn|study|watch|buy|make|do|have|travel|try)\b/ig, "I want to $1", "want 뒤에는 to + 동사가 필요해요."],
+      [/\b(must|should|can|could|will) to\b/ig, "$1", "must, should, can 뒤에는 to 없이 동사가 와요."],
+      [/\b(two|three|four|five|six|seven|eight|nine|ten|\d+) time\b(?!s)/ig, "$1 times", "두 번 이상은 times예요."],
+      [/\b(two|three|four|five|six|seven|eight|nine|ten|\d+) times in a week\b/ig, "$1 times a week", "in a week 대신 a week이라고 하면 더 자연스러워요."],
+      [/\ba (apple|orange|egg|idea|hour|honest|animal|english|example|umbrella)\b/ig, "an $1", "모음 소리 앞에는 a 대신 an을 써요."]
+    ];
+
+    rules.forEach(([re, to, note]) => {
+      re.lastIndex = 0;
+      if (re.test(text)) {
+        re.lastIndex = 0;
+        const next = text.replace(re, to);
+        if (next !== text) {
+          text = next;
+          notes.push(note);
+        }
+      }
+    });
+
+    if (/\b(yesterday|last night|last week|last weekend|last year|ago)\b/i.test(text)) {
+      const verbs = Object.keys(IRREG).concat(REG).sort((a, b) => b.length - a.length);
+      const re = new RegExp("\\b(I|we|they|he|she|you)\\s+(" + verbs.join("|") + ")\\b", "i");
+      const match = text.match(re);
+      if (match) {
+        const start = match.index + match[1].length + 1;
+        const before = text.slice(0, match.index).trim().split(/\s+/).pop() || "";
+        if (!/^(didn't|did|don't|do|to|can|could|will|would|should|must|let's|lets)$/i.test(before)) {
+          const verb = match[2].toLowerCase();
+          const past = pastOf(verb);
+          if (past !== verb) {
+            text = text.slice(0, start) + past + text.slice(start + match[2].length);
+            notes.unshift(match[2] + " → " + past + ". yesterday, last week 같은 말이 있으면 과거형을 써요.");
+          }
+        }
+      }
+    }
+
+    const natural = tidy(text);
+    const changed = core(natural) !== core(raw);
+    return {
+      natural: natural,
+      notes: changed ? notes.slice(0, 3) : []
+    };
+  }
+
+  function tipNode(polished) {
+    if (!polished || !polished.natural) return null;
+    let notes = polished.notes || [];
+    if (!Array.isArray(notes)) notes = [String(notes)];
+    notes = notes.filter(Boolean).slice(0, 3);
+    const boxTip = el("div", "tip");
+    boxTip.appendChild(el("strong", null, state.mode === "tutor" ? "선생님 메모 · 더 자연스럽게" : "더 자연스럽게"));
+    boxTip.appendChild(el("div", "natural", polished.natural));
+    if (notes.length) {
+      const list = document.createElement("ul");
+      notes.forEach((note) => list.appendChild(el("li", null, note)));
+      boxTip.appendChild(list);
+    }
+    return boxTip;
+  }
+
+  function focusPhrase(text) {
+    const patterns = [
+      /\b(?:like|love|enjoy|hate|prefer)\s+((?:a |an |the |my )?(?:playing |watching |eating |drinking |going to |going |making |studying |learning |visiting )?[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,3})/i,
+      /\b(?:play|playing|watch|watching|eat|eating|study|studying|visit|visited|cook|cooking)\s+((?:a |an |the |my )?[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2})/i
+    ];
+    for (const re of patterns) {
+      const match = text.match(re);
+      if (match) {
+        let phrase = match[1].replace(/\b(and|because|but|so|when|with|on|in|at|for|to|yesterday|today|tomorrow)\b[\s\S]*$/i, "").trim();
+        phrase = phrase.replace(/^(playing|watching|eating|drinking|going to|going|making|studying|learning|visiting)\s+/i, "");
+        phrase = phrase.replace(/[^\w\s'-]/g, "").trim();
+        if (phrase && !STOP.has(phrase.toLowerCase())) return phrase;
+      }
+    }
+    const words = text.toLowerCase().replace(/[^a-z\s'-]/g, " ").split(/\s+/).filter((word) => word.length > 3 && !STOP.has(word));
+    return words[0] || "";
+  }
+
+  function detectTopic(text) {
+    const buckets = [
+      ["food", /\b(food|eat|ate|cook|cooking|ramen|pizza|coffee|tea|bread|rice|chicken|pasta|kimchi|sushi|burger|cake|breakfast|lunch|dinner|restaurant|snack|noodle|noodles|bibimbap|soup|hungry|meal|cafe|café)\b/i],
+      ["travel", /\b(trip|travel|travelled|traveled|bus|plane|train|hotel|beach|mountain|city|country|seoul|busan|paris|vacation|flight|airport|island|abroad)\b/i],
+      ["media", /\b(movie|movies|film|music|song|band|singer|actor|drama|netflix|game|games|book|books|anime|youtube|concert)\b/i],
+      ["work", /\b(work|job|study|studying|school|class|homework|office|exam|test|project|coworker|teacher|student|company)\b/i],
+      ["hobby", /\b(hobby|soccer|football|basketball|baseball|tennis|game|guitar|piano|draw|drawing|photo|camera|gym|run|running|bike|reading)\b/i],
+      ["weekend", /\b(weekend|saturday|sunday)\b/i],
+      ["dream", /\b(dream|future|someday|hope to|want to be)\b/i],
+      ["day", /\b(today|morning|tonight|routine|every day|after work|after school)\b/i]
+    ];
+    for (const [name, re] of buckets) {
+      if (re.test(text)) return name;
+    }
+    return state.topic;
+  }
+
+  function remember(text, focus) {
+    if (!focus) return;
+    const lower = text.toLowerCase();
+    if (/\b(like|love|enjoy)\b/.test(lower)) {
+      state.facts.push(focus);
+      state.facts = state.facts.slice(-4);
+    }
+  }
+
+  function echo(text, focus) {
+    const lower = text.toLowerCase();
+    if (/\b(don't|do not)\s+(like|love|enjoy)\b|\bhate\b|\bcan't stand\b/.test(lower)) {
+      return pickFresh("dislike", [
+        focus ? "So " + focus + " is not really your thing. That is fair." : "That is fair. You do not have to like everything.",
+        "Thanks for saying it plainly. Taste is personal.",
+        "Good to know. We can leave that one alone."
+      ]);
+    }
+    if (/\b(like|love|enjoy|favorite|favourite)\b/.test(lower)) {
+      return pickFresh("like", [
+        focus ? focus.charAt(0).toUpperCase() + focus.slice(1) + " — I can see why that sticks with you." : "That sounds like something you care about.",
+        focus ? "I like how specific that is. " + focus.charAt(0).toUpperCase() + focus.slice(1) + " says a lot about you." : "That says a lot about you.",
+        "That sounds like a good part of your life."
+      ]);
+    }
+    if (/\b(yesterday|last night|last week|last weekend|ago)\b/.test(lower)) {
+      return pickFresh("past", [
+        "Thanks for telling me about that. The past tense makes the story clear.",
+        focus ? "So " + focus + " was part of that story. I am following you." : "I am following you.",
+        "That sounds like a real day, not a textbook day. I like that."
+      ]);
+    }
+    if (/\b(tomorrow|tonight|next week|going to|gonna|i will|i'll)\b/.test(lower)) {
+      return pickFresh("future", [
+        "Oh, you already have a plan. I like that.",
+        focus ? "I hope " + focus + " goes well." : "I hope it goes well.",
+        "Future plans are good speaking practice. Tell me more about yours."
+      ]);
+    }
+    if (/\b(tired|busy|stressed|hard|difficult|sad|sick|bored)\b/.test(lower)) {
+      return pickFresh("hard", [
+        "That sounds heavy. Thanks for telling me.",
+        "I hear you. Some days just take more energy.",
+        "That is honest. You do not have to pretend everything is fine."
+      ]);
+    }
+    if (/\b(happy|excited|fun|great|awesome|glad|proud)\b/.test(lower)) {
+      return pickFresh("good", [
+        "That energy comes through. I am glad you said it.",
+        "Nice. Hold onto that feeling for a second.",
+        focus ? focus.charAt(0).toUpperCase() + focus.slice(1) + " sounds like it treated you well." : "That sounds like it treated you well."
+      ]);
+    }
+    if (focus) {
+      return pickFresh("mirror", [
+        "I caught the part about " + focus + ". Say a little more if you want.",
+        focus.charAt(0).toUpperCase() + focus.slice(1) + " is a good thing to talk about.",
+        "Okay, " + focus + ". I am with you."
+      ]);
+    }
+    return pickFresh("plain", [
+      "I am with you. Say it in any words you have.",
+      "That gives me something to ask about.",
+      "Good. A simple sentence is enough."
+    ]);
+  }
+
+  function nextQuestion(text) {
+    const topic = detectTopic(text) || "any";
+    const bank = (QUESTIONS[topic] || []).concat(QUESTIONS.any);
+    const chosen = pickFresh("q-" + topic, bank);
+    if (!chosen) {
+      state.lastQuestion = "Can you tell me a little more?";
+      return { q: state.lastQuestion, samples: ["I want to say more, but I need a second.", "Let me try one more sentence."] };
+    }
+    state.lastQuestion = chosen[0];
+    return { q: chosen[0], samples: chosen[1] };
+  }
+
+  function answerMia(lower) {
+    const about = [
+      [/\bhow are you\b|\bhow's it going\b|\bhows it going\b|\bhow about you\b/, "I am doing well. I just made coffee, and I am ready to talk."],
+      [/\b(what('s| is) your name|who are you)\b/, "I am Mia. I am here to practice English with you, like a friend who has time."],
+      [/\bwhere are you from\b|\bwhere do you live\b/, "I live near the ocean, in a small city I call Harbor Bay. It rains a lot, which I secretly like."],
+      [/\bhow old are you\b/, "I do not count too carefully. Old enough to have a favorite cafe, young enough to still get excited about a trip."],
+      [/\bwhat do you do\b|\byour job\b|\bwhat is your job\b/, "I spend my days talking with people who want their English to feel natural. It is a good job."],
+      [/\b(your hobby|your hobbies|what do you like|what are your hobbies)\b/, "I like rainy walks, old movies, and noodles. I am also learning a little Korean, so I understand the feeling of searching for a word."],
+      [/\bfavorite food\b|\bfavourite food\b/, "Noodles. A hot bowl, too much, on a cold day. That is my answer almost every time."],
+      [/\bfavorite (movie|film)\b|\bfavourite (movie|film)\b/, "Anything a little slow, where people talk in a kitchen. I like movies that feel like a conversation."],
+      [/\b(do you speak korean|can you speak korean)\b/, "Only a little. I can say hello, thank you, and I am still learning. That is why I respect every sentence you try in English."],
+      [/\b(help me|what should i say|how do i say|i don't know what to say|i dont know what to say)\b/, "You can start with I think, or Yesterday I, or I want to. A short true sentence is better than a perfect imaginary one."]
+    ];
+    for (const [re, line] of about) {
+      if (re.test(lower)) return line;
+    }
+    return "";
+  }
+
+  function koreanHelp(text) {
+    if (!/[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text)) return "";
+    const hit = KO_HINTS.find(([ko]) => text.includes(ko));
+    if (hit) {
+      return "I can see Korean there. One piece you can use: " + hit[0] + " → " + hit[1] + ". For example: " + hit[2];
+    }
+    return "I can see Korean in that message. Try one short English sentence, even if it is imperfect. For example: I want to talk about my day.";
+  }
+
+  function compose(raw) {
+    const text = raw.trim();
+    const lower = text.toLowerCase();
+
+    if (/^(bye|goodbye|good night|see you|see ya)\b/.test(lower)) {
+      return {
+        speech: "It was good talking with you. Come back any time — your English gets easier every time you use it. Bye for now.",
+        samples: ["Bye, Mia. I will practice again.", "See you. Today was fun."]
+      };
+    }
+    if (/^(thanks|thank you|thank u)\b/.test(lower)) {
+      const follow = nextQuestion(text);
+      return {
+        speech: "You are welcome. " + follow.q,
+        samples: follow.samples
+      };
+    }
+    if (/^(hi|hello|hey|good morning|good afternoon|good evening)\b/.test(lower) && text.split(/\s+/).length < 6) {
+      const follow = nextQuestion(text);
+      return {
+        speech: "Hi. I am glad you are here. " + follow.q,
+        samples: follow.samples
+      };
+    }
+
+    const hangul = (text.match(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g) || []).length;
+    const latin = (text.match(/[A-Za-z]/g) || []).length;
+    if (hangul >= 2 && latin < 8) {
+      return {
+        speech: koreanHelp(text),
+        samples: ["My hobby is listening to music.", "Today I am a little tired.", "I want to talk about food."]
+      };
+    }
+
+    const mia = answerMia(lower);
+    if (mia) {
+      const follow = nextQuestion(text);
+      return { speech: mia + " " + follow.q, samples: follow.samples };
+    }
+
+    const words = text.split(/\s+/).filter(Boolean);
+    if (words.length <= 2 && !text.includes("?")) {
+      const seed = words.filter((word) => !/^(yes|no|ok|okay|yeah|yep|nope|hmm|uh|um)$/i.test(word)).join(" ");
+      return {
+        speech: "That is a start. Can you make it one full sentence? You can begin with I, or Yesterday I, or I want to.",
+        samples: seed
+          ? ["I like " + seed + ".", "Yesterday I tried " + seed + ".", "I want to talk about " + seed + "."]
+          : ["Yes, I do. Let me say a little more.", "No, not really. I can tell you why."]
+      };
+    }
+
+    if (state.mode === "interview" && /\b(start again|try again|from the start)\b/i.test(lower)) {
+      state.interviewStep = 1;
+      state.lastQuestion = INTERVIEW[0].q;
+      return {
+        speech: "Let's start the interview again. " + INTERVIEW[0].q,
+        samples: INTERVIEW[0].samples
+      };
+    }
+
+    if (state.mode === "interview") {
+      const praise = pickFresh("iv", [
+        "Thank you, that was clear.",
+        "Good. I could follow that.",
+        "Nice. You answered the question."
+      ]);
+      if (state.interviewStep >= INTERVIEW.length) {
+        return {
+          speech: praise + " That is the end of this practice interview. You can start again, or switch to friend mode and just talk.",
+          samples: ["Can we start the interview again?", "Let's just talk as friends."]
+        };
+      }
+      const item = INTERVIEW[state.interviewStep++];
+      state.lastQuestion = item.q;
+      return { speech: praise + " " + item.q, samples: item.samples };
+    }
+
+    const focus = focusPhrase(text);
+    remember(text, focus);
+    let lead = echo(text, focus);
+
+    if (state.turns > 0 && state.turns % 4 === 0 && state.facts.length && focus !== state.facts[0]) {
+      lead += " Earlier you mentioned " + state.facts[0] + ", and I still remember that.";
+    }
+
+    if (/\?/.test(text) || /^(what|where|who|why|how|when|do|did|are|is|can|could|would|should)\b/i.test(text)) {
+      lead = pickFresh("userq", [
+        "Good question. I would keep my answer short and personal.",
+        "I like that you asked something. Questions keep a conversation alive.",
+        "If I were answering, I would start with one clear sentence and then add a reason."
+      ]) + " " + lead;
+    }
+
+    const follow = nextQuestion(text + " " + (focus || ""));
+    let speech = lead + " " + follow.q;
+
+    if (state.mode === "tutor" && state.level === "beginner") {
+      speech = speech.replace(/\b(I'd|I'm|don't|can't|won't|it's|that's|you're|we're|they're|let's)\b/gi, (m) => {
+        const map = { "i'd": "I would", "i'm": "I am", "don't": "do not", "can't": "cannot", "won't": "will not", "it's": "it is", "that's": "that is", "you're": "you are", "we're": "we are", "they're": "they are", "let's": "let us" };
+        return map[m.toLowerCase()] || m;
+      });
+    }
+
+    return { speech: speech, samples: follow.samples };
+  }
+
+  function speak(text) {
+    if (!voiceEl.checked || !window.speechSynthesis) return;
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "en-US";
+    let rate = state.level === "beginner" ? 0.9 : state.level === "advanced" ? 1.02 : 0.96;
+    if (slowEl.checked) rate = 0.82;
+    utter.rate = rate;
+    const voices = synth.getVoices();
+    const voice = voices.find((v) => /en-US/i.test(v.lang) && /female|samantha|aria|jenny|google us/i.test(v.name))
+      || voices.find((v) => /en-US/i.test(v.lang))
+      || voices.find((v) => /^en/i.test(v.lang));
+    if (voice) utter.voice = voice;
+    setTimeout(() => synth.speak(utter), 40);
+  }
+
+  function greet(extra) {
+    const line = OPENERS[state.mode][state.level] || OPENERS[state.mode].beginner;
+    const samples = {
+      friend: ["Today I went to work and had coffee.", "I am a little tired, but I want to talk."],
+      tutor: ["Today I studied English for twenty minutes.", "I want to practice talking about my day."],
+      interview: ["I am a student, and I like working with people.", "Nice to meet you. I am learning English for my job."]
+    };
+    if (extra) addSystem(extra);
+    addBot(line, samples[state.mode]);
+    state.lastQuestion = line;
+    if (state.mode === "interview") state.interviewStep = 1;
+  }
+
+  function openTopic(topic) {
+    state.topic = topic;
+    document.querySelectorAll(".topic").forEach((btn) => {
+      btn.setAttribute("aria-pressed", String(btn.dataset.topic === topic));
+    });
+    const pair = TOPIC_OPENERS[topic];
+    const bank = QUESTIONS[topic][0];
+    state.lastQuestion = pair[1];
+    addBot(pair[0] + " " + pair[1], bank[1]);
+  }
+
+  function explainFailure(message) {
+    const text = String(message || "");
+    if (/401|invalid_api_key|Incorrect API key/i.test(text)) return "API 키가 거부됐어요. .env의 키를 확인해 주세요.";
+    if (/429|quota|billing|insufficient|no_credits|credit_balance/i.test(text)) return "OpenAI 계정에 크레딧이 남아 있지 않아요. 크레딧을 충전하면 이 대화가 연결됩니다.";
+    if (/missing_api_key/i.test(text)) return ".env에서 API 키를 찾지 못했어요.";
+    if (/Failed to fetch|NetworkError|Load failed/i.test(text)) return "API 서버에 연결하지 못했어요. start.bat을 실행한 주소로 열어 주세요.";
+    return "답변을 가져오지 못했어요. 잠시 후 다시 보내 보세요.";
+  }
+
+  function localReply(text, userRow) {
+    const polished = polish(text);
+    if (polished.notes.length) {
+      const stack = userRow.querySelector(".stack");
+      if (stack) stack.appendChild(tipNode(polished));
+    }
+    const reply = compose(polished.notes.length ? polished.natural : text);
+    addBot(reply.speech, reply.samples);
+    showLatestTurn();
+  }
+
+  async function send(raw) {
+    const text = raw.trim();
+    if (!text || state.busy) return;
+    if (text.length > 500) {
+      addSystem("한 번에 500자 정도까지 보내 보세요. 짧은 문장이 회화에 더 좋아요.");
+      return;
+    }
+    state.busy = true;
+    box.value = "";
+    grow();
+    const userRow = addUser(text, null);
+    state.history.push({ role: "user", content: text });
+    if (state.history.length > 24) state.history = state.history.slice(-24);
+    state.turns += 1;
+    countEl.textContent = "오늘 " + state.turns + "문장";
+    if (state.turns === 6 && !state.praised) {
+      state.praised = true;
+      addSystem("6문장을 말했어요. 회화는 이렇게 쌓입니다.");
+    }
+    const pending = addSystem("Mia가 답하는 중이에요...");
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: state.mode,
+          level: state.level,
+          topic: state.topic ? TOPICS[state.topic] || state.topic : "",
+          messages: state.history.slice(-16)
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      pending.remove();
+      if (!response.ok || !data.reply) {
+        throw new Error(data.error || ("HTTP " + response.status));
+      }
+      if (data.correction && data.correction.natural) {
+        const stack = userRow.querySelector(".stack");
+        if (stack) stack.appendChild(tipNode(data.correction));
+      }
+      let suggestions = data.suggestions || [];
+      if (!Array.isArray(suggestions)) suggestions = [String(suggestions)];
+      addBot(String(data.reply), suggestions);
+      showLatestTurn();
+    } catch (err) {
+      pending.remove();
+      addSystem(explainFailure(err && err.message));
+      localReply(text, userRow);
+    } finally {
+      state.busy = false;
+      box.focus();
+    }
+  }
+
+  function grow() {
+    box.style.height = "auto";
+    box.style.height = Math.min(box.scrollHeight, 140) + "px";
+  }
+
+  function resetChat(message) {
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    log.replaceChildren();
+    suggests.replaceChildren();
+    state.turns = 0;
+    state.interviewStep = 0;
+    state.bags = {};
+    state.facts = [];
+    state.history = [];
+    state.topic = null;
+    state.praised = false;
+    countEl.textContent = "오늘 0문장";
+    document.querySelectorAll(".topic").forEach((btn) => btn.setAttribute("aria-pressed", "false"));
+    greet(message);
+  }
+
+  document.getElementById("form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    send(box.value);
+  });
+
+  box.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      send(box.value);
+    }
+  });
+  box.addEventListener("input", grow);
+
+  document.getElementById("modes").addEventListener("click", (event) => {
+    const btn = event.target.closest("button");
+    if (!btn || btn.dataset.mode === state.mode) return;
+    state.mode = btn.dataset.mode;
+    state.interviewStep = 0;
+    state.bags = {};
+    syncPressed("#modes button", "mode", state.mode);
+    applyModeLabel();
+    saveSettings();
+    const labels = { friend: "친구", tutor: "선생님", interview: "면접" };
+    greet(labels[state.mode] + " 모드로 바꿨어요.");
+  });
+
+  document.getElementById("levels").addEventListener("click", (event) => {
+    const btn = event.target.closest("button");
+    if (!btn || btn.dataset.level === state.level) return;
+    state.level = btn.dataset.level;
+    syncPressed("#levels button", "level", state.level);
+    saveSettings();
+    const labels = { beginner: "초급", intermediate: "중급", advanced: "고급" };
+    addSystem("난이도를 " + labels[state.level] + "으로 바꿨어요.");
+    if (state.level === "beginner") {
+      addBot("I will keep my English a little slower and clearer. What do you want to talk about?", ["I want to talk about my day.", "Let's talk about food."]);
+    }
+  });
+
+  document.getElementById("topics").addEventListener("click", (event) => {
+    const btn = event.target.closest("button");
+    if (!btn) return;
+    openTopic(btn.dataset.topic);
+  });
+
+  document.getElementById("clear").addEventListener("click", () => resetChat("새 대화를 시작했어요."));
+  voiceEl.addEventListener("change", () => {
+    saveSettings();
+    if (!voiceEl.checked && window.speechSynthesis) speechSynthesis.cancel();
+  });
+  slowEl.addEventListener("change", saveSettings);
+
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null;
+  let listening = false;
+  if (!Rec) {
+    micBtn.disabled = true;
+    micBtn.title = "이 브라우저는 음성 인식을 지원하지 않아요. Chrome을 사용해 보세요.";
+  } else {
+    rec = new Rec();
+    rec.lang = "en-US";
+    rec.interimResults = true;
+    rec.continuous = false;
+    rec.onresult = (event) => {
+      let said = "";
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        said += event.results[i][0].transcript;
+      }
+      box.value = said;
+      grow();
+    };
+    rec.onend = () => {
+      listening = false;
+      micBtn.setAttribute("aria-pressed", "false");
+    };
+    rec.onerror = () => {
+      listening = false;
+      micBtn.setAttribute("aria-pressed", "false");
+      addSystem("음성을 알아듣지 못했어요. 마이크 권한을 확인하거나, 키보드로 입력해 주세요.");
+    };
+    micBtn.addEventListener("click", () => {
+      if (listening) {
+        rec.stop();
+        return;
+      }
+      if (window.speechSynthesis) speechSynthesis.cancel();
+      try {
+        listening = true;
+        micBtn.setAttribute("aria-pressed", "true");
+        rec.start();
+      } catch (e) {
+        listening = false;
+        micBtn.setAttribute("aria-pressed", "false");
+      }
+    });
+  }
+
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+  }
+
+  function checkHealth() {
+    fetch("/api/health")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data && data.ok && data.configured) {
+          state.online = true;
+          addSystem("OpenAI와 연결됐어요. 편하게 영어로 이야기해 보세요.");
+        } else if (data && data.ok) {
+          addSystem(".env에서 API 키를 찾지 못했어요.");
+        }
+      })
+      .catch(() => {
+        addSystem("API 서버가 꺼져 있어요. start.bat을 실행한 뒤, 창에 나온 주소로 다시 여세요.");
+      });
+  }
+
+  loadSettings();
+  greet();
+  checkHealth();
+  box.focus();
+})();
+</script>
+</body>
+</html>
